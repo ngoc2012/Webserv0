@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/29 16:23:49 by ngoc             ###   ########.fr       */
+/*   Updated: 2023/12/29 17:18:22 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,10 +304,8 @@ int     Request::end_read(void)
     _read_queue = false;
     _host->new_response_sk(_socket);
     _response.set_status_code(_status_code);
-    /*
-    if (_status_code == 200)
+    if (_status_code == 200 && _method == POST)
         _cgi.execute();
-        */
     _response.set_write_queue(true);
     return (0);
 }
