@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/26 16:56:09 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/01 15:50:24 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include "Location.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
-
 #include "webserv.hpp"
 
 #include "Header.hpp"
@@ -40,6 +39,11 @@ Header::Header(Response* r, std::string ext) :
 	init();
 	std::cout << "Header Constructor" << std::endl;
 }
+Header::~Header()
+{
+	std::cout << "Header Destruction" << std::endl;
+}
+
 
 std::string	Header::generate(void)
 {
@@ -53,14 +57,19 @@ std::string	Header::generate(void)
 	else
 		str += (*_status_message)[_status_code];
 	str += "\r\n";
-	str += "Allow: " + _allow + "\r\n";
-	str += std::string("Content-Language: en") + "\r\n";
-	//str += "Content-Length: " + itos(_response->get_content_length()) + "\r\n";
-	if (_mimes->find(_extension) == _mimes->end())
-		str += "Content-Type: text/plain\r\n";
-	else
-		str += "Content-Type: " + (*_mimes)[_extension] + "\r\n";
-	str += "\r\n";
+    if (_status_code == 200)
+    {
+        str += "Allow: " + _allow + "\r\n";
+        str += std::string("Content-Language: en") + "\r\n";
+        if (_mimes->find(_extension) == _mimes->end())
+            str += "Content-Type: text/plain\r\n";
+        else
+            str += "Content-Type: " + (*_mimes)[_extension] + "\r\n";
+    }
+    else
+        str += "Content-Type: text/html\r\n";
+    str += "Content-Length: " + ft::itos(_response->get_content_length()) + "\r\n";
+    str += "Date: " + get_current_time() + "\r\n\r\n";
 	//std::cout << str << std::endl;
 	return (str);
 }
@@ -68,13 +77,18 @@ std::string	Header::generate(void)
 void	Header::init(void)
 {
 }
+/*
+std::string     Header::date() {
+    struct timeval tv;
+    char buf[32];
+    gettimeofday(&tv, NULL);
 
-
-Header::~Header()
-{
-	std::cout << "Header Destruction" << std::endl;
+    struct tm	*tm;
+    tm = gmtime(&tv.tv_sec);
+    int ret = strftime(buf, 32, "%a, %d %b %Y %T GMT", tm);
+    return std::string(buf, ret);
 }
-
+*/
 std::string	Header::get_current_time(void)
 {
 	std::time_t currentTime = std::time(0);
@@ -95,6 +109,73 @@ std::string	Header::file_last_modified_time(std::string file_name)
 	char		buffer[80];
 	std::strftime(buffer, 80, "%a, %d %b %Y %H:%M:%S GMT", time_info);
 	return (std::string(buffer));
+}
+
+bool	Header::parse_method_url(std::string& s, std::string& url, e_method& m)
+{
+    size_t  newline = s.find("\n");
+    if (newline == NPOS)
+        return (false);
+
+    std::vector<std::string>	line0;
+    line0 = ft::split_string(s.substr(0, newline), "     ");
+    if (line0.size() != 3)
+    {
+        std::cerr << "Error: First line header invalid" << std::endl;
+        return (false);
+    }
+    url = line0[1];
+    if (line0[0] == "GET")
+        m = GET;
+    else if (line0[0] == "POST")
+        m = POST;
+    else if (line0[0] == "PUT")
+        m = PUT;
+    else if (line0[0] == "DELETE")
+        m = DELETE;
+    else
+    {
+        std::cerr << "Error: Method unknown : " << line0[0] << std::endl;
+        return (false);
+    }
+    return (true);
+}
+
+bool	    Header::parse_content_type(Host* host, std::string &s, std::string& ct)
+{
+    size_t	pos = s.find("Content-Type:");
+    if (pos == NPOS)
+    {
+        std::cerr << "Error: Content type not found." << std::endl;
+        return (false);
+    }
+    std::string type = s.substr(pos + 14, 50);
+    std::map<std::string, std::string>*	mimes = host->get_mimes();
+    for (std::map<std::string, std::string>::iterator it = mimes->begin();
+            it != mimes->end(); ++it)
+        if (type.find(it->second) != NPOS)
+        {
+            ct = it->second;
+            return (true);
+        }
+    std::cerr << "Error: Content type not found." << std::endl;
+    return (false);
+}
+
+bool	Header::parse_content_length(std::string& s, size_t& cl)
+{
+	size_t	pos1;
+	size_t	pos = s.find("Content-Length: ");
+	if (pos != NPOS)
+        pos1 = s.substr(pos).find("\n");
+	if (pos == NPOS || pos1 == NPOS)
+	{
+        std::cerr << "Error: Content length not found." << std::endl;
+        return (false);
+	}
+    pos += 16;
+    cl = std::atoi(s.substr(pos, pos1).c_str());
+    return (true);
 }
 
 void		Header::set_status_code(int s) {_status_code = s;}

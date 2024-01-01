@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/29 17:18:22 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/01 23:38:29 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "Server.hpp"
 #include "Request.hpp"
 #include "Location.hpp"
+#include "Header.hpp"
 
 Request::Request()
 {
@@ -67,20 +68,26 @@ int     Request::read(void)
     if (!_read_queue)
         return (0);
     if (_header == "")
-    {
         read_header();
-        if (_status_code != 200)
-            return (end_read());
-        process_fd_in();
-        if (_status_code != 200)
-            return (end_read());
-    }
     else
         read_body();
     return (0);
 }
 
-void	Request::read_header()
+int     Request::read_header()
+{
+    //std::cout << "read_header _body_size: " << _body_size << std::endl;
+    if (!receive_header())
+        return (end_read());
+    if (!parse_header())
+        return (end_read());
+    process_fd_in();
+    if (_status_code != 200 || !_body_size)
+        return (end_read());
+    return (0);
+}
+
+bool	Request::receive_header(void)
 {
     int ret = 1;
 
@@ -91,7 +98,7 @@ void	Request::read_header()
         if (ret < 0)
         {
             _status_code = 500;
-            return ;
+            return (false);
         }
         if (ret > 0)
         {
@@ -105,138 +112,64 @@ void	Request::read_header()
     {
         std::cerr << "Error: No end header found.\n" << std::endl;
         _status_code = 400;	// Bad Request
-        return ;
+        return (false);
     }
     _body_position += 4;
     _body_size = ret - _body_position;
-    //std::cout << "read_header _body_size: " << _body_size << std::endl;
-    if (!parser_header())
+    return (true);
+}
+
+bool	Request::parse_header(void)
+{
+    if (!Header::parse_method_url(_header, _url, _method))
     {
-        std::cerr << "Error: request header invalid.\n" << std::endl;
         _status_code = 400;	// Bad Request
+        return (false);
     }
-    if (_status_code != 200 || !_body_size)
-        end_read();
-}
-
-bool	Request::parser_header(void)
-{
-    if (!read_method_url())
+    if (!check_location())
         return (false);
-    check_location();
-    //if (!check_location())
-    //    return (false);
-    if (_method != GET && !read_content_type())
-        return (false);
-    if (_method != GET && !read_content_length())
-        return (false);
-    return (true);
-}
-
-bool	Request::read_method_url()
-{
-    size_t  newline = _header.find("\n");
-    if (newline == NPOS)
-        return (false);
-
-    std::vector<std::string>	line0;
-    line0 = ft::split_string(_header.substr(0, newline), "     ");
-    if (line0.size() != 3)
+    if (_method == GET)
+        return (true);
+    if (!Header::parse_content_type(_host, _header, _content_type))
     {
-        std::cerr << "Error: First line header" << std::endl;
+        _status_code = 400;	// Bad Request
         return (false);
     }
-    _url = line0[1];
-    if (line0[0] == "GET")
-        _method = GET;
-    else if (line0[0] == "POST")
-        _method = POST;
-    else if (line0[0] == "PUT")
-        _method = PUT;
-    else
+    if (!Header::parse_content_length(_header, _content_length))
     {
-        std::cerr << "Error: Method unknown : " << line0[0] << std::endl;
+        _status_code = 400;	// Bad Request
         return (false);
     }
-    return (true);
-}
-
-bool	Request::read_content_type()
-{
-	const char*	types[] = {
-		"text/plain",
-		"text/html",
-		"text/css",
-		"text/javascript",
-		"text/xml",
-		"application/json",
-		"application/xml",
-		"application/pdf",
-		"application/zip",
-		"application/octet-stream",
-		"image/jpeg",
-		"image/png",
-		"image/gif",
-		"image/svg+xml",
-		"audio/mpeg",
-		"video/mp4",
-		"multipart/form-data",
-		"application/x-www-form-urlencoded"
-	};
-	size_t	pos = _header.find("Content-Type:");
-	if (pos == NPOS)
+    if (_content_length > _body_max)
 	{
-        std::cerr << "Error: Content type not found." << std::endl;
+        _status_code = 400;	// Bad Request
+        std::cerr << "Error: Content length bigger than " << _body_max << std::endl;
         return (false);
 	}
-    for (int i = 0; i < 18; i++)
-        if (_header.substr(pos + 14, 50).find(types[i]) != NPOS)
-        {
-            _content_type = types[i];
-            return (true);
-        }
-    std::cerr << "Error: Content type not found." << std::endl;
-    return (false);
-}
-
-bool	Request::read_content_length()
-{
-	size_t	pos1;
-	size_t	pos = _header.find("Content-Length: ");
-	if (pos != NPOS)
-        pos1 = _header.substr(pos).find("\n");
-	if (pos == NPOS || pos1 == NPOS)
-	{
-        std::cerr << "Error: Content length not found." << std::endl;
-        return (false);
-	}
-    pos += 16;
-    _content_length = std::atoi(_header.substr(pos, pos1).c_str());
     return (true);
 }
 
-void	Request::read_body()
+int     Request::read_body()
 {
     char	buffer[_body_buffer];
     int     ret;
 
-	//std::cout << "chunk_size: " << chunk_size << std::endl;
     ret = recv(_socket, buffer, _body_buffer, 0);
-    _body_size += ret;
-	std::cout << "read_body: " << ret << std::endl;
-	std::cout << "_body_size: " << _body_size << std::endl;
     if (ret < 0)
     {
         std::cerr << "Error: recv error" << std::endl;
         _status_code = 400;
-        end_read();
-        return ;
+        return (end_read());
     }
-    if (ret > 0 && _fd_in > 0)
-        write(_fd_in, buffer, ret);
-    //if (ret < (int) _body_buffer)
+    _body_size += ret;
+	//std::cout << "read_body: " << ret << std::endl;
+	//std::cout << "_body_size: " << _body_size << std::endl;
+    if (ret > 0 && _fd_in > 0
+        && write(_fd_in, buffer, ret) == -1)
+        return (end_read());
     if (ret == 0 || _body_size >= _content_length)
-        end_read();
+        return (end_read());
+    return (0);
 }
 
 bool	Request::check_location()
@@ -253,11 +186,11 @@ bool	Request::check_location()
     _full_file_name = _location->get_full_file_name(_url,
             _server->get_root());
 
-    std::cout << "check_location " << _full_file_name << std::endl;
+    std::cout << "check_location " << _socket << " " << _full_file_name << std::endl;
 
-	struct stat buffer;
+	struct stat info;
 	if (_method != PUT
-            && stat(_full_file_name.c_str(), &buffer) != 0)
+            && stat(_full_file_name.c_str(), &info) != 0)
     {
 		_status_code = 404; // Not found
         return (false);             
@@ -288,16 +221,21 @@ void	Request::process_fd_in()
             if (_fd_in == -1)
                 _status_code = 500;
             break;
+        case DELETE:
+            if (std::remove(_full_file_name.c_str()))
+                std::cerr << "Error: Can not delete file " << _tmp_file << std::endl;
+            break;
         case NONE:
             break;
     }
-    if (_body_size > 0 && _fd_in != -1)
-        write(_fd_in, &_buffer[_body_position], _body_size);
+    if (_body_size > 0 && _fd_in != -1 && _status_code == 200
+        && write(_fd_in, &_buffer[_body_position], _body_size) == -1)
+        _status_code = 500;
 }
 
 int     Request::end_read(void)
 {
-    std::cout << "end_read" << std::endl;
+    std::cout << "end_read " << _socket << " " << _full_file_name << std::endl;
 
     if (_fd_in > 0)
         close(_fd_in);

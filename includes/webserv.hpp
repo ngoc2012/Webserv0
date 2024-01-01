@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/14 22:38:19 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/27 15:30:40 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/01 15:49:03 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 # define NPOS std::string::npos
 
-enum	e_method {GET, POST, PUT, NONE};
+enum	e_method {GET, POST, PUT, DELETE, NONE};
 
 namespace ft {
 

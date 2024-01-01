@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/30 12:04:07 by ngoc             ###   ########.fr       */
+/*   Updated: 2023/12/31 09:51:22 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ Cgi::Cgi()
 {
 	std::cout << "Cgi Default constructor" << std::endl;
     _envs = 0;
+    _pid = -1;
 }
 Cgi::Cgi(const Cgi& src) { *this = src; }
 Cgi&	Cgi::operator=( Cgi const & src )
@@ -63,7 +64,7 @@ void    Cgi::execute()
         return ;
     }
 
-    int _pid = fork();
+    _pid = fork();
 
     if (_pid == -1)
     {

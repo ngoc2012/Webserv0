@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/27 12:47:33 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/01 23:33:34 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 Location::Location()
 {
+    _autoindex = false;
 }
 Location::Location(const Location& src) { *this = src; }
 Location&	Location::operator=( Location const & src )
@@ -22,7 +23,10 @@ Location&	Location::operator=( Location const & src )
 	(void) src;
 	return (*this);
 }
-Location::Location(std::string u): _url(u) {}
+Location::Location(std::string u): _url(u)
+{
+    _autoindex = false;
+}
 Location::~Location() {}
 
 
@@ -91,15 +95,13 @@ std::string	Location::get_full_file_name(std::string url, std::string root)
     else
         file_name += _alias;
     if (url.size() > _url.size())
-    {
         file_name += url.substr(_url.size(), url.size() - 1);
-    }
-	struct stat	info;
-	if (stat(file_name.c_str(), &info) == 0
-            && S_ISDIR(info.st_mode))
-		file_name += "index.html";
+    struct stat	info;
+    if (stat(file_name.c_str(), &info) == 0
+            && S_ISDIR(info.st_mode) && !_autoindex)
+        file_name += "/index.html";
     return (file_name);
-	//std::cout << _full_file_name << std::endl;
+    //std::cout << _full_file_name << std::endl;
 }
 
 std::string	Location::get_methods_str(void)
@@ -122,6 +124,8 @@ std::string	Location::get_method_str(e_method e) {
             return ("GET");
         case POST:
             return ("POST");
+        case DELETE:
+            return ("DELETE");
         case PUT:
             return ("PUT");
         case NONE:
@@ -134,8 +138,10 @@ std::vector<e_method>		Location::get_methods(void) const {return (_methods);}
 std::string			        Location::get_alias(void) const {return (_alias);}
 std::string			        Location::get_url(void) const {return (_url);}
 std::string			        Location::get_cgi_pass(void) const {return (_cgi_pass);}
+bool                        Location::get_autoindex(void) const {return (_autoindex);}
 
 void				Location::insert_methods(e_method e) {_methods.push_back(e);}
 void				Location::set_alias(std::string s) {_alias = s;}
 void				Location::set_url(std::string u) {_url = u;}
 void			    Location::set_cgi_pass(std::string c) {_cgi_pass = c;}
+void                Location::set_autoindex(bool a) {_autoindex = a;}

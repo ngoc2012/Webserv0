@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/27 19:18:11 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/01 16:27:13 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,11 @@ class	Response
 		Request*	    _request;
 
 		std::string	    _header;
+		std::string	    _body;
 		int		        _status_code;
 		size_t		    _content_length;
 		size_t		    _body_size;
+		size_t		    _pos;
 
         int             _fd_out;
 		std::string	    _full_file_name;
@@ -42,6 +44,7 @@ class	Response
 
         void	        write_header(void);
         void	        get_file_size(void);
+        void	        mess_body(std::string, std::string);
 
 		void		    process_fd_out(void);
         int 	        write_body(void);
