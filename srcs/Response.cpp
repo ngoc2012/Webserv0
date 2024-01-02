@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2024/01/01 23:41:25 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/02 11:46:28 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ void     Response::mess_body(std::string title, std::string body)
     _body += "    </html>\n";
     //_body = (*_host->get_status_message())[_status_code];
     _content_length = _body.size();
-    std::cout << "error_body " << _body << std::endl;
+    //std::cout << "error_body " << _body << std::endl;
 }
 
 void     Response::get_file_size()
