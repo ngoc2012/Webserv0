@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2024/01/02 11:34:54 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/02 22:06:36 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,17 +86,21 @@ bool	Location::find_method(e_method m)
 	return (false);
 }
 
-std::string	Location::get_full_file_name(std::string url, std::string root)
+std::string	Location::get_full_file_name(std::string url, std::string root, e_method e)
 {
     std::string file_name;
 
     if (_alias == "")
-        file_name += root;
+        file_name = root + url.substr(1);
     else
-        file_name += _alias;
-    if (url.size() > _url.size())
-        file_name += url.substr(_url.size(), url.size() - 1);
-    if (_autoindex)
+    {
+        file_name = _alias + "/";
+        int     pos = 0;
+        while (url[pos] == _url[pos])
+            pos++;
+        file_name += url.substr(pos);
+    }
+    if (_autoindex || e == PUT || e == POST)
         return (file_name);
     struct stat	info;
     if (stat(file_name.c_str(), &info))

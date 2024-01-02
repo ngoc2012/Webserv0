@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2024/01/01 16:27:13 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/02 16:42:59 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ class	Response
 		size_t		    get_content_length(void) const;
         int             get_fd_out(void) const;
         Host*		    get_host(void) const;
+        Request*	    get_request(void) const;
 
 		void		    set_socket(int);
 		void		    set_host(Host*);

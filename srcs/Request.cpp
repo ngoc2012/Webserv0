@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2024/01/01 23:38:29 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/02 16:36:56 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,7 +184,7 @@ bool	Request::check_location()
         return (false);
 
     _full_file_name = _location->get_full_file_name(_url,
-            _server->get_root());
+            _server->get_root(), _method);
 
     std::cout << "check_location " << _socket << " " << _full_file_name << std::endl;
 
