@@ -62,7 +62,7 @@ std::string	Header::generate(void)
         str += "Allow: " + _allow + "\r\n";
         str += std::string("Content-Language: en") + "\r\n";
         if (_mimes->find(_extension) == _mimes->end())
-            str += "Content-Type: text/plain\r\n";
+            str += "Content-Type: text/html\r\n";
         else
             str += "Content-Type: " + (*_mimes)[_extension] + "\r\n";
     }
