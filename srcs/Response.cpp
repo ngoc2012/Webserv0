@@ -92,7 +92,7 @@ void     Response::mess_body(std::string title, std::string body)
     _body += "<!DOCTYPE html>\n";
     _body += "    <html>\n";
     _body += "    <head>\n";
-    _body += "    <title>" + title + "</title>\n";
+    _body += "    <title>" + title + "</title>\n"; 
     _body += "    </head>\n";
     _body += "    <body>\n";
     _body += "    <h1>" + body + "</h1>\n";

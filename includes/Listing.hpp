@@ -28,6 +28,7 @@ class	Listing
 		virtual ~Listing();
 
         static std::string get_html(Response*);
+		static std::string get_listing(const std::string& directory_name);
 };
 
 #endif
