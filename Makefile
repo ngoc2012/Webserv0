@@ -6,7 +6,7 @@
 #    By: minh-ngu <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/28 10:56:09 by minh-ngu          #+#    #+#              #
-#    Updated: 2024/01/05 12:51:39 by ngoc             ###   ########.fr        #
+#    Updated: 2024/01/06 17:19:47 by ngoc             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,9 @@ all:	$(MANDA)
 $(MANDA): $(SRCS) $(OBJS) $(INCS)
 	$(CC) $(FLAGS) $(OBJS) -o $(MANDA)
 test:
-	clear && make re && make clean ./server
+	clear && make re && make clean && ./server
+test0:
+	clear && make re && make clean && valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all ./server
 gits:
 	git add Makefile
 	git add *.cpp

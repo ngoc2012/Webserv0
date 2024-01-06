@@ -39,7 +39,7 @@ Waiting on select() ...
 Request header: 646
 GET /index_files HTTP/1.1
 Host: 127.0.0.1:4141
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate, br
@@ -57,112 +57,19 @@ end_read 6 www/index_files
 Waiting on select() ...
 Write set sk = 6
 Header Constructor
-check-mark.svg - 1 - 0
-steadfast-dark.svg - 1 - 0
-top-wave-dark-m.webp - 1 - 0
-landing-bigT-dark.png - 1 - 0
-port8.jpg - 1 - 0
-port7.jpg - 1 - 0
-right-arrow.svg - 1 - 0
-lead-capture-sdk-v1.js - 1 - 0
-landing-t.png - 1 - 0
-landing-t-dark.png - 1 - 0
-easy-installation.svg - 1 - 0
-loader.js - 1 - 0
-local-solar-m.webp - 1 - 0
-server.svg - 1 - 0
-recaptcha__en.js - 1 - 0
-faq.js - 1 - 0
-embed.html - 1 - 0
-solar-panels.jpg - 1 - 0
-launchdarkly-js-client-sdk@3 - 1 - 0
-2e901695-d600-4ad7-a59c-01e92b66e5d8_data - 0 - 1
-short-arrow.svg - 1 - 0
-port6-m.webp - 1 - 0
-root.css - 1 - 0
-port2.jpg - 1 - 0
-panels.png - 1 - 0
-bottom-wave-dark.png - 1 - 0
-port4-m.webp - 1 - 0
-port7-m.webp - 1 - 0
-port5.jpg - 1 - 0
-a.html - 1 - 0
-bottom-curve2.svg - 1 - 0
-landing-t.webp - 1 - 0
-test - 0 - 1
-gtm.js - 1 - 0
-panels-m.webp - 1 - 0
-logo.svg - 1 - 0
-port1-m.webp - 1 - 0
-partnersw.svg - 1 - 0
-sun.svg - 1 - 0
-chat-widget.js - 1 - 0
-2e901695-d600-4ad7-a59c-01e92b66e5d8.html - 1 - 0
-.. - 0 - 1
-css.css - 1 - 0
-landing-bigT.webp - 1 - 0
-port9-m.webp - 1 - 0
-dark.js - 1 - 0
-design.svg - 1 - 0
-chat-widget.esm.js - 1 - 0
-lead-capture-sdk.0.7706.0.js - 1 - 0
-night-time.png - 1 - 0
-port8-m.webp - 1 - 0
-chevron-down-white.svg - 1 - 0
-solar-panels-night.jpg - 1 - 0
-top-wave-dark.png - 1 - 0
-chevron-down.svg - 1 - 0
-office.svg - 1 - 0
-98503.js - 1 - 0
-landing-1400.png - 1 - 0
-port3-m.webp - 1 - 0
-port5-m.webp - 1 - 0
-. - 0 - 1
-solar-panels-night-m.webp - 1 - 0
-embed_data - 0 - 1
-whitecurve.svg - 1 - 0
-landing-m.webp - 1 - 0
-salesman.svg - 1 - 0
-statesw.svg - 1 - 0
-logo-dark.svg - 1 - 0
-port1.jpg - 1 - 0
-likew.svg - 1 - 0
-panels.webp - 1 - 0
-long-arrow.svg - 1 - 0
-landing-m-dark2.webp - 1 - 0
-application.css - 1 - 0
-netlify-identity-widget.js - 1 - 0
-port6.jpg - 1 - 0
-fail.svg - 1 - 0
-steadfast-light.svg - 1 - 0
-landing-1400-dark.png - 1 - 0
-clockw.svg - 1 - 0
-dark.css - 1 - 0
-port3.jpg - 1 - 0
-port9.jpg - 1 - 0
-solar-panels-m.webp - 1 - 0
-bottom-wave-dark-m.webp - 1 - 0
-local-solar.png - 1 - 0
-critical.css - 1 - 0
-local.css - 1 - 0
-port4.jpg - 1 - 0
-nav.js - 1 - 0
-port2-m.webp - 1 - 0
-api.js - 1 - 0
-landing.webp - 1 - 0
 Response Header:
 HTTP/1.1 200 OK
 Allow: PUT,GET,DELETE
 Content-Language: en
 Content-Type: text/html
-Content-Length: 6950
-Date: Sat, 06 Jan 2024 11:11:45 GMT
+Content-Length: 6326
+Date: Sat, 06 Jan 2024 16:18:21 GMT
 
 
 Header Destruction
 Waiting on select() ...
 Write set sk = 6
-end_connection read |www/index_files| 6 0/6950
+end_connection read |www/index_files| 6 0/6326
 close_client_sk 6
 RequestHeader Destruction
 Waiting on select() ...
@@ -173,7 +80,7 @@ Waiting on select() ...
 Request header: 739
 GET /index_files/2e901695-d600-4ad7-a59c-01e92b66e5d8_data HTTP/1.1
 Host: 127.0.0.1:4141
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate, br
@@ -192,29 +99,19 @@ end_read 6 www/index_files/2e901695-d600-4ad7-a59c-01e92b66e5d8_data
 Waiting on select() ...
 Write set sk = 6
 Header Constructor
-util.js - 1 - 0
-leadcapture.0.7706.0.js - 1 - 0
-common.js - 1 - 0
-logo.svg - 1 - 0
-logger-1.min.js - 1 - 0
-.. - 0 - 1
-js.es - 1 - 0
-. - 0 - 1
-how-it-works.webp - 1 - 0
-how-it-works.jpg - 1 - 0
 Response Header:
 HTTP/1.1 200 OK
 Allow: PUT,GET,DELETE
 Content-Language: en
 Content-Type: text/html
-Content-Length: 821
-Date: Sat, 06 Jan 2024 11:11:48 GMT
+Content-Length: 1067
+Date: Sat, 06 Jan 2024 16:18:23 GMT
 
 
 Header Destruction
 Waiting on select() ...
 Write set sk = 6
-end_connection read |www/index_files/2e901695-d600-4ad7-a59c-01e92b66e5d8_data| 6 0/821
+end_connection read |www/index_files/2e901695-d600-4ad7-a59c-01e92b66e5d8_data| 6 0/1067
 close_client_sk 6
 RequestHeader Destruction
 Waiting on select() ...
@@ -222,10 +119,10 @@ Listening socket is readable 3
   New incoming connection - 6
 RequestHeader Default constructor
 Waiting on select() ...
-Request header: 702
-GET /index_files/test HTTP/1.1
+Request header: 708
+GET /index_files/embed_data HTTP/1.1
 Host: 127.0.0.1:4141
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0
+User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
 Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate, br
@@ -239,111 +136,24 @@ Sec-Fetch-Site: same-origin
 Sec-Fetch-User: ?1
 
 
-check_location 6 www/index_files/test
-end_read 6 www/index_files/test
+check_location 6 www/index_files/embed_data
+end_read 6 www/index_files/embed_data
 Waiting on select() ...
 Write set sk = 6
 Header Constructor
-part2.webp - 1 - 0
-encoreuntest - 0 - 1
-port7-m.webp - 1 - 0
-.. - 0 - 1
-. - 0 - 1
-part3.webp - 1 - 0
-part1.webp - 1 - 0
 Response Header:
 HTTP/1.1 200 OK
 Allow: PUT,GET,DELETE
 Content-Language: en
 Content-Type: text/html
-Content-Length: 555
-Date: Sat, 06 Jan 2024 11:12:01 GMT
+Content-Length: 628
+Date: Sat, 06 Jan 2024 16:18:34 GMT
 
 
 Header Destruction
 Waiting on select() ...
 Write set sk = 6
-end_connection read |www/index_files/test| 6 0/555
-close_client_sk 6
-RequestHeader Destruction
-Waiting on select() ...
-Listening socket is readable 3
-  New incoming connection - 6
-RequestHeader Default constructor
-Waiting on select() ...
-Request header: 715
-GET /index_files/encoreuntest HTTP/1.1
-Host: 127.0.0.1:4141
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
-Referer: http://127.0.0.1:4141/index_files/test
-Cookie: wc_visitor=98503-5f99d83b-247b-bc74-f175-423093d72941; wc_client=direct+..+none+..++..++..++..++..+http%3A%2F%2F127.0.0.1%3A4141%2F+..+98503-5f99d83b-247b-bc74-f175-423093d72941+..+
-Upgrade-Insecure-Requests: 1
-Sec-Fetch-Dest: document
-Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: same-origin
-Sec-Fetch-User: ?1
-
-
-check_location 6 www/index_files/encoreuntest
-end_read 6 www/index_files/encoreuntest
-Waiting on select() ...
-Write set sk = 6
-Header Constructor
-Response Header:
-HTTP/1.1 404 Not Found
-Content-Type: text/html
-Content-Length: 141
-Date: Sat, 06 Jan 2024 11:12:02 GMT
-
-
-Header Destruction
-Waiting on select() ...
-Write set sk = 6
-end_connection read |www/index_files/encoreuntest| 6 0/141
-close_client_sk 6
-RequestHeader Destruction
-Waiting on select() ...
-Listening socket is readable 3
-  New incoming connection - 6
-RequestHeader Default constructor
-Waiting on select() ...
-Request header: 715
-GET /index_files/encoreuntest HTTP/1.1
-Host: 127.0.0.1:4141
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
-Referer: http://127.0.0.1:4141/index_files/test
-Cookie: wc_visitor=98503-5f99d83b-247b-bc74-f175-423093d72941; wc_client=direct+..+none+..++..++..++..++..+http%3A%2F%2F127.0.0.1%3A4141%2F+..+98503-5f99d83b-247b-bc74-f175-423093d72941+..+
-Upgrade-Insecure-Requests: 1
-Sec-Fetch-Dest: document
-Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: same-origin
-Sec-Fetch-User: ?1
-
-
-check_location 6 www/index_files/encoreuntest
-end_read 6 www/index_files/encoreuntest
-Waiting on select() ...
-Write set sk = 6
-Header Constructor
-Response Header:
-HTTP/1.1 404 Not Found
-Content-Type: text/html
-Content-Length: 141
-Date: Sat, 06 Jan 2024 11:12:59 GMT
-
-
-Header Destruction
-Waiting on select() ...
-Write set sk = 6
-end_connection read |www/index_files/encoreuntest| 6 0/141
+end_connection read |www/index_files/embed_data| 6 0/628
 close_client_sk 6
 RequestHeader Destruction
 Waiting on select() ...
