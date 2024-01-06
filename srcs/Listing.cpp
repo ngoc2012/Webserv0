@@ -34,51 +34,50 @@ Listing::~Listing() {
 
 }
 
-std::string Listing::get_listing(const std::string& directory_name) {
-    std::string     listing_html = "<!DOCTYPE html>\n\
+std::string Listing::get_listing(const std::string& directory_name, const std::string& base_path) {
+    std::string listing_html = "<!DOCTYPE html>\n\
         <html>\n\
         <head>\n\
         <title>Listing</title>\n\
+        <style>\n\
+        .folder-link {\n\
+            font-weight: bold;\n\
+            color: blue;\n\
+        }\n\
+        </style>\n\
         </head>\n\
         <body>\n";
+    
+    std::string base_directory = directory_name.substr(directory_name.find_last_of("/\\") + 1);
+
+    listing_html += "<h2>Contenu du repertoire : " + base_directory + "</h2>\n";
+    listing_html += "<ul>\n";
+
     const char* directory_path = directory_name.c_str();
     DIR* directory = opendir(directory_path);
+
     if (directory) {
-        listing_html += "        <h2>Contenu du repertoire : " + directory_name + "</h2>\n";
-        listing_html += "        <ul>\n";
         struct dirent* entry;
         while ((entry = readdir(directory))) {
-            std::cout << entry->d_name << " - " << (entry->d_type == DT_REG) << " - " << (entry->d_type == DT_DIR) << std::endl;
             if (entry->d_type == DT_REG) {
-                // Fichier régulier
-                listing_html += "<li>";
-                listing_html += "        <a href='/index_files/";
-                listing_html += entry->d_name;
-                listing_html += "'>";
-                listing_html += entry->d_name;
-                listing_html += "</a>";
-                listing_html += "</li>\n";
+                listing_html += "<li><a href='";
+                listing_html += base_path + base_directory + "/" + entry->d_name;
+                listing_html += "'>" + std::string(entry->d_name) + "</a></li>\n";
             } else if (entry->d_type == DT_DIR
                     && std::string(entry->d_name) != "."
                     && std::string(entry->d_name) != "..") {
-                //    && strcmp(entry->d_name, ".") != 0
-                //    && strcmp(entry->d_name, "..") != 0) {
-                // Dossier (à l'exception des dossiers '.' et '..')
-                listing_html += "<li>";
-                listing_html += "        <a href='/index_files/";
-                listing_html += entry->d_name;
-                listing_html += "'>";
-                listing_html += entry->d_name;
-                listing_html += "/</a>";
-                listing_html += "</li>\n";
+                std::string folder_path = directory_name + "/" + entry->d_name;
+                listing_html += "<li><a href='" + base_path + base_directory + "/" + entry->d_name + "' target='_blank' class='folder-link'>";
+                listing_html += entry->d_name; 
+                listing_html += "</a></li>\n";
             }
         }
-        listing_html += "        </ul>\n";
         closedir(directory);
     } else {
         listing_html += "Impossible d'ouvrir le répertoire.";
     }
-    listing_html += "    </body>\n</html>";
+
+    listing_html += "</ul>\n</body>\n</html>";
     return listing_html;
 }
 
@@ -86,7 +85,7 @@ std::string Listing::get_html(Response* response) {
 	(void)response;
 	Request* request = response->get_request();
 	std::string folder_name = request->get_full_file_name();
-	std::string listing = get_listing(folder_name);
+	std::string listing = get_listing(folder_name, "");
 	return listing;
 }
 
