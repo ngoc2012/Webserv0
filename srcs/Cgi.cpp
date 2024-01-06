@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/31 09:51:22 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/05 17:19:30 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,9 @@
 
 #define BUFFER_SIZE 65792
 
-Cgi::Cgi()
+Cgi::Cgi() {}
+Cgi::Cgi(Request* request): _request(request)
 {
-	std::cout << "Cgi Default constructor" << std::endl;
     _envs = 0;
     _pid = -1;
 }
@@ -131,7 +131,7 @@ bool    Cgi::get_envs()
 
     Server*   server = _request->get_server();
     envs.push_back("SCRIPT_NAME=" + _file);
-    envs.push_back("SERVER_NAME=" + server->get_server_name());
+    //envs.push_back("SERVER_NAME=" + server->get_server_name());
     envs.push_back("SERVER_PROTOCOL=");
     envs.push_back("SERVER_PORT=" + ft::itos((int) server->get_port()));
     envs.push_back("SERVER_SOFTWARE=WEBSERV/1.0");
@@ -140,7 +140,7 @@ bool    Cgi::get_envs()
     if (extension == "php")
         envs.push_back("REDIRECT_STATUS=200");
 
-    std::vector<std::string> header_lines = ft::split_string(_request->get_header(), "\n");
+    std::vector<std::string> header_lines = ft::split_string(_request->get_str_header(), "\n");
     size_t          i;
     for (std::vector<std::string>::iterator it = header_lines.begin();
             it != header_lines.end(); it++)

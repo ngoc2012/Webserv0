@@ -6,11 +6,12 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/26 17:03:09 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/05 21:00:27 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Host.hpp"
+#include "Address.hpp"
 #include "Server.hpp"
 #include "Response.hpp"
 #include "Request.hpp"
@@ -18,16 +19,15 @@
 
 Host::Host(const Host& src) { *this = src; }
 
-Host::Host(const char* conf) {
-	_max_clients = 128;
-	_client_max_body_size = 1;
-	_client_body_buffer_size = 128;
-	_parser_error = false;
+Host::Host() {
+    _max_clients = 128;
+    _client_max_body_size = 1;
+    _client_body_buffer_size = 128;
+    _parser_error = false;
 
-	_max_sk = -1;
+    _max_sk = -1;
     mimes();
     status_message();
-	Configuration	parser(_servers, this, conf);
 }
 
 Host&	Host::operator=( Host const & src )
@@ -39,24 +39,24 @@ Host&	Host::operator=( Host const & src )
 Host::~Host()
 {
 	std::cout << "Host Destructor" << std::endl;
-	for (std::vector<Server*>::iterator it = _servers.begin();
-		it != _servers.end(); ++it)
-		delete (*it);
 	for (std::map<int, Request*>::iterator it = _sk_request.begin();
 		it != _sk_request.end(); ++it)
+		delete (it->second);
+	for (std::map<std::string, Address*>::iterator it = _str_address.begin();
+		it != _str_address.end(); ++it)
 		delete (it->second);
 	std::cout << "End server" << std::endl;
 }
 
 void	Host::start(void)
 {
-	if (_parser_error || !check_servers_conf())
+	if (_parser_error)
 		return ;
 	FD_ZERO(&_master_read_set);
 	FD_ZERO(&_master_write_set);
-	FD_ZERO(&_server_set);
+	FD_ZERO(&_listen_set);
 	start_server();
-	if (!_sk_server.size())
+	if (!_sk_address.size())
 		return ;
 	do
 	{
@@ -68,36 +68,26 @@ void	Host::start(void)
 	} while (true);
 }
 
-bool	Host::check_servers_conf(void)
-{
-	for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end(); ++it)
-		if ((*it)->get_root() == "")
-		{
-			std::cerr << "Error: root null" << std::endl;
-			return (false);
-		}
-	return (true);
-}
-
 void	Host::start_server(void)
 {
 	int	listen_sk;
-	for (std::vector<Server*>::iterator it = _servers.begin(); it != _servers.end();)
-	{
-		(*it)->set_host(this);
-		listen_sk = (*it)->server_socket();
+	for (std::map<std::string, Address*>::iterator ad = _str_address.begin();
+		ad != _str_address.end();)
+    {
+        listen_sk = (ad->second)->listen_socket();
 		if (listen_sk > 0)
 		{
-			add_sk_2_master_read_set(listen_sk, *it);
-			FD_SET(listen_sk, &_server_set);
-			++it;
+			add_sk_2_master_read_set(listen_sk, ad->second);
+			FD_SET(listen_sk, &_listen_set);
+			++ad;
 		}
 		else
 		{
-			delete (*it);
-			_servers.erase(it);
+            std::cerr << "Error: Listening -> Address " << ad->first << " closed." << std::endl;
+			delete (ad->second);
+			_str_address.erase(ad->first);
 		}
-	}
+    }
 }
 
 bool	Host::select_available_sk(void)
@@ -107,7 +97,7 @@ bool	Host::select_available_sk(void)
 	//std::cout << "_sk_ready = " << _sk_ready << std::endl;
 	if (_sk_ready < 0)
 	{
-		perror("select() failed");
+        std::cerr << "Error: select() failed" << std::endl;
 		return (false);
 	}
 	return (true);
@@ -121,8 +111,8 @@ void	Host::check_sk_ready(void)
         {
             //std::cout << "Read set sk = " << i << std::endl;
             _sk_ready--;
-            if (FD_ISSET(i, &_server_set))
-                _sk_server[i]->accept_client_sk();
+            if (FD_ISSET(i, &_listen_set))
+                _sk_address[i]->accept_client_sk();
             else
                 _sk_request[i]->read();
         }
@@ -135,18 +125,18 @@ void	Host::check_sk_ready(void)
     }
 }
 
-void  	Host::add_sk_2_master_read_set(int new_sk, Server* s)
+void  	Host::add_sk_2_master_read_set(int new_sk, Address* a)
 {
 	if (new_sk > _max_sk)
 		_max_sk = new_sk;
 	FD_SET(new_sk, &_master_read_set);
-	_sk_server[new_sk] = s;
+	_sk_address[new_sk] = a;
 }
 
-void	Host::new_request_sk(int new_sk, Server* s)
+void	Host::new_request_sk(int new_sk, Address* a)
 {
-	add_sk_2_master_read_set(new_sk, s);
-	_sk_request[new_sk] = new Request(new_sk, this, s);
+	add_sk_2_master_read_set(new_sk, a);
+	_sk_request[new_sk] = new Request(new_sk, this, a);
 }
 
 void	Host::new_response_sk(int new_sk)
@@ -192,6 +182,7 @@ void	Host::mimes(void)
     _mimes["jpeg"] = "image/jpeg";
     _mimes["jpg"] = "image/jpeg";
     _mimes["js"] = "application/javascript";
+    _mimes["es"] = "application/javascript";
     _mimes["atom"] = "application/atom+xml";
     _mimes["rss"] = "application/rss+xml";
 
@@ -300,17 +291,134 @@ void	Host::mimes(void)
     _mimes["asf"] = "video/x-ms-asf";
     _mimes["wmv"] = "video/x-ms-wmv";
     _mimes["avi"] = "video/x-msvideo";
+
+    _set_mimes.insert("text/html");
+    _set_mimes.insert("text/css");
+    _set_mimes.insert("text/xml");
+    _set_mimes.insert("image/gif");
+    _set_mimes.insert("image/jpeg");
+    _set_mimes.insert("application/javascript");
+    _set_mimes.insert("application/javascript");
+    _set_mimes.insert("application/atom+xml");
+    _set_mimes.insert("application/rss+xml");
+
+    _set_mimes.insert("text/mathml");
+    _set_mimes.insert("text/plain");
+    _set_mimes.insert("text/vnd.sun.j2me.app-descriptor");
+    _set_mimes.insert("text/vnd.wap.wml");
+    _set_mimes.insert("text/x-component");
+
+    _set_mimes.insert("image/png");
+    _set_mimes.insert("image/svg+xml");
+    _set_mimes.insert("image/svg+xml");
+    _set_mimes.insert("image/tiff");
+    _set_mimes.insert("image/tiff");
+    _set_mimes.insert("image/vnd.wap.wbmp");
+    _set_mimes.insert("image/webp");
+    _set_mimes.insert("image/x-icon");
+    _set_mimes.insert("image/x-jng");
+    _set_mimes.insert("image/x-ms-bmp");
+
+    _set_mimes.insert("font/woff");
+    _set_mimes.insert("font/woff2");
+
+    _set_mimes.insert("application/java-archive");
+    _set_mimes.insert("application/java-archive");
+    _set_mimes.insert("application/java-archive");
+    _set_mimes.insert("application/json");
+    _set_mimes.insert("application/mac-binhex40");
+    _set_mimes.insert("application/msword");
+    _set_mimes.insert("application/pdf");
+    _set_mimes.insert("application/postscript");
+    _set_mimes.insert("application/postscript");
+    _set_mimes.insert("application/postscript");
+    _set_mimes.insert("application/rtf");
+    _set_mimes.insert("application/vnd.apple.mpegurl");
+    _set_mimes.insert("application/vnd.google-earth.kml+xml");
+    _set_mimes.insert("application/vnd.google-earth.kmz");
+    _set_mimes.insert("application/vnd.ms-excel");
+    _set_mimes.insert("application/vnd.ms-fontobject");
+    _set_mimes.insert("application/vnd.ms-powerpoint");
+    _set_mimes.insert("application/vnd.oasis.opendocument.graphics");
+    _set_mimes.insert("application/vnd.oasis.opendocument.presentation");
+    _set_mimes.insert("application/vnd.oasis.opendocument.spreadsheet");
+    _set_mimes.insert("application/vnd.oasis.opendocument.text");
+
+    _set_mimes.insert("application/vnd.openxmlformats-officedocument.presentationml.presentation");
+    _set_mimes.insert("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    _set_mimes.insert("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+    _set_mimes.insert("application/vnd.wap.wmlc");
+    _set_mimes.insert("application/x-7z-compressed");
+    _set_mimes.insert("application/x-cocoa");
+    _set_mimes.insert("application/x-java-archive-diff");
+    _set_mimes.insert("application/x-java-jnlp-file");
+    _set_mimes.insert("application/x-makeself");
+    _set_mimes.insert("application/x-perl");
+    _set_mimes.insert("application/x-perl");
+    _set_mimes.insert("application/x-pilot");
+    _set_mimes.insert("application/x-pilot");
+    _set_mimes.insert("application/x-rar-compressed");
+    _set_mimes.insert("application/x-redhat-package-manager");
+    _set_mimes.insert("application/x-sea");
+    _set_mimes.insert("application/x-shockwave-flash");
+    _set_mimes.insert("application/x-stuffit");
+    _set_mimes.insert("application/x-tcl");
+    _set_mimes.insert("application/x-tcl");
+    _set_mimes.insert("application/x-x509-ca-cert");
+    _set_mimes.insert("application/x-x509-ca-cert");
+    _set_mimes.insert("application/x-x509-ca-cert");
+    _set_mimes.insert("application/x-xpinstall");
+    _set_mimes.insert("application/xhtml+xml");
+    _set_mimes.insert("application/xspf+xml");
+    _set_mimes.insert("application/zip");
+
+    _set_mimes.insert("application/octet-stream");
+    _set_mimes.insert("application/octet-stream");
+    _set_mimes.insert("application/octet-stream");
+    _set_mimes.insert("application/octet-stream");
+    _set_mimes.insert("application/octet-stream");
+    _set_mimes.insert("application/octet-stream");
+    _set_mimes.insert("application/octet-stream");
+    _set_mimes.insert("application/octet-stream");
+    _set_mimes.insert("application/octet-stream");
+    _set_mimes.insert("application/octet-stream");
+
+    _set_mimes.insert("audio/midi");
+    _set_mimes.insert("audio/midi");
+    _set_mimes.insert("audio/midi");
+    _set_mimes.insert("audio/mpeg");
+    _set_mimes.insert("audio/ogg");
+    _set_mimes.insert("audio/x-m4a");
+    _set_mimes.insert("audio/x-realaudio");
+
+    _set_mimes.insert("video/3gpp");
+    _set_mimes.insert("video/3gpp");
+    _set_mimes.insert("video/mp2t");
+    _set_mimes.insert("video/mp4");
+    _set_mimes.insert("video/mpeg");
+    _set_mimes.insert("video/mpeg");
+    _set_mimes.insert("video/quicktime");
+    _set_mimes.insert("video/webm");
+    _set_mimes.insert("video/x-flv");
+    _set_mimes.insert("video/x-m4v");
+    _set_mimes.insert("video/x-mng");
+    _set_mimes.insert("video/x-ms-asf");
+    _set_mimes.insert("video/x-ms-asf");
+    _set_mimes.insert("video/x-ms-wmv");
+    _set_mimes.insert("video/x-msvideo");
 }
 
 int			                        Host::get_max_clients(void) const {return (_max_clients);}
-std::map<int, Server*>	            Host::get_sk_server(void) const {return (_sk_server);}
 std::map<int, Request*>	            Host::get_sk_request(void) const {return (_sk_request);}
-//std::map<int, Response*>	Host::get_sk_response(void) const {return (_sk_response);}
 size_t			                    Host::get_client_max_body_size(void) const {return (_client_max_body_size);}
 size_t			                    Host::get_client_body_buffer_size(void) const {return (_client_body_buffer_size);}
 std::map<std::string, std::string>*	Host::get_mimes(void) {return (&_mimes);}
+std::set<std::string>*	            Host::get_set_mimes(void) {return (&_set_mimes);}
 std::map<int, std::string>*  		Host::get_status_message(void) {return (&_status_message);}
 
 void			Host::set_client_max_body_size(size_t n) {_client_max_body_size = n;}
 void			Host::set_client_body_buffer_size(size_t n) {_client_body_buffer_size = n;}
 void			Host::set_parser_error(bool e) {_parser_error = e;}
+//void		    Host::set_servers(std::vector<Server*> s) {_servers = s;}
+void		    Host::set_str_address(std::map<std::string, Address*> a) {_str_address = a;}

@@ -6,23 +6,27 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/30 13:43:45 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/05 17:16:43 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-
 #include "webserv.hpp"
-#include "Response.hpp"
-#include "Cgi.hpp"
 
-#ifndef CLIENTREQUEST_HPP
-# define CLIENTREQUEST_HPP
+#include "RequestHeader.hpp"
+#include "Response.hpp"
+
+#ifndef REQUEST_HPP
+# define REQUEST_HPP
  
 # define MEGABYTE 1048576
 # define KILOBYTE 1024
 
 class	Host;
+class	Address;
+class	Server;
+class	RequestHeader;
+class	Response;
+class	Cgi;
 enum    e_method;
 
 class	Request
@@ -30,14 +34,16 @@ class	Request
 	private:
 		int		        _socket;
 		Host*		    _host;
+		Address*		_address;
 		Server*		    _server;
+		RequestHeader	_header;
 		Response	    _response;
 		Location*	    _location;	
-        Cgi             _cgi;
+        Cgi*            _cgi;
 
-
-		std::string	    _header;
+		std::string	    _str_header;
 		std::string	    _url;
+		std::string	    _host_name;
 		e_method	    _method;
 		std::string	    _content_type;
 		size_t		    _content_length;
@@ -70,7 +76,7 @@ class	Request
 		Request(const Request&);
 		Request &operator=(const Request& op);
 	public:
-		Request(int, Host*, Server*);
+		Request(int, Host*, Address*);
 		virtual ~Request();
 
 		int             read(void);
@@ -80,12 +86,12 @@ class	Request
 		e_method	    get_method(void) const;
 		std::string	    get_url(void) const;
 		Response*	    get_response(void);
-        const Cgi*      get_cgi(void) const;
+        Cgi*            get_cgi(void) const;
 		int		        get_status_code(void) const;
         std::string	    get_content_type(void) const;
         size_t		    get_content_length(void) const;
         size_t		    get_body_size(void) const;
-        std::string	    get_header(void) const;
+        std::string	    get_str_header(void) const;
         std::string	    get_full_file_name(void) const;
         Location*	    get_location(void) const;	
         int		        get_fd_in(void) const;

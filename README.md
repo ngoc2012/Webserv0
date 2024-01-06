@@ -5,6 +5,31 @@
 clear && make re && valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all ./server
 clear && make re && valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all ./server && make clean
 ```
+
+## Basics tests
+
+### In browser:
+```console
+http://127.0.0.1:4141
+http://127.0.0.1:4141/HOPPY_DAYS.html
+http://127.0.0.1:4141/Monastik_living_in_Athina.html
+```
+
+### Autoindex:
+```console
+http://127.0.0.1:4141/index_files
+```
+
+### Send a file:
+```console
+curl -i -X PUT -H "Content-Type: image/jpeg" --data-binary "@test/port6.jpg" 127.0.0.1:4141/put_test/port6.jpg
+```
+
+### GET:
+```console
+curl -i -X GET -F "file=@.conf" 127.0.4.1:80
+```
+
 ## README.md
 
 [Example](https://github.com/github-linguist/linguist)
@@ -57,23 +82,6 @@ So to save a macro `'x'`, you can do:
 ## Basic knowledge
 
 [rfc9110](https://www.rfc-editor.org/rfc/rfc9110.html)
-
-## Basics tests
-
-### Autoindex:
-```console
-http://127.0.0.1:4141/index_files
-```
-
-### Send a file:
-```console
-curl -i -X PUT -H "Content-Type: image/jpeg" --data-binary "@test/port6.jpg" 127.0.0.1:4141/put_test/port6.jpg
-```
-
-### GET:
-```console
-curl -i -X GET -F "file=@.conf" 127.0.4.1:80
-```
 
 ### How the netcat command `nc` works:
 

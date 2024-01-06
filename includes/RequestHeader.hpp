@@ -1,45 +1,40 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Cgi.hpp                                            :+:      :+:    :+:   */
+/*   RequestHeader.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2024/01/04 15:57:45 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/05 13:02:58 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
+#ifndef REQUESTHEADER_HPP
+# define REQUESTHEADER_HPP
+ 
+class	Host;
 
-#ifndef CGI_HPP
-# define CGI_HPP
-
-class	Request;
-
-class	Cgi
+class	RequestHeader
 {
 	private:
-        std::string     _pass;
-        std::string     _file;
-		Request*        _request;
-        char**          _envs;
-        int             _pid;
+		Host*		    _host;
+		std::string*    _str;
+		size_t		    _pos;
 
-        bool            get_envs();
-
-		Cgi();
-		Cgi(const Cgi&);
-		Cgi	&operator=(const Cgi& op);
+		RequestHeader(const RequestHeader&);
+		RequestHeader		&operator=(const RequestHeader& op);
 	public:
-		Cgi(Request*);
-		virtual ~Cgi();
+		RequestHeader();
+		virtual ~RequestHeader();
 
-        void            execute();
+        bool            parse_method_url(std::string&, e_method&);
+        std::string     parse_host_name();
+        std::string     parse_content_type();
+        size_t          parse_content_length();
 
-        int             get_pid(void) const;
-
-        void	        set_request(Request*);
+        void	set_host(Host*);
+        void    set_str(std::string*);
 };
 
 #endif

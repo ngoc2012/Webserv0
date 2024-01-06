@@ -6,15 +6,17 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2024/01/02 16:36:56 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/06 09:26:03 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Host.hpp"
+#include "Address.hpp"
 #include "Server.hpp"
-#include "Request.hpp"
 #include "Location.hpp"
+#include "Request.hpp"
 #include "Header.hpp"
+#include "Cgi.hpp"
 
 Request::Request()
 {
@@ -26,21 +28,25 @@ Request&	Request::operator=( Request const & src )
 	(void) src;
 	return (*this);
 }
-Request::Request(int sk, Host* h, Server* s) : _socket(sk), _host(h), _server(s)
+Request::Request(int sk, Host* h, Address* a) : _socket(sk), _host(h), _address(a)
 {
 	//std::cout << "Request Constructor sk: " << sk << std::endl;
 
+    _server = 0;
 	_response.set_socket(sk);
 	_response.set_host(h);
-	_response.set_server(s);
+	_response.set_server(_server);
 	_response.set_request(this);
+    _cgi = 0;
 
-	_header = "";
+	_str_header = "";
 	_url = "";
 	_method = NONE;
 	_content_type = "";
 	_content_length = 0;
 	_body_size = 0;
+    _header.set_host(h);
+    _header.set_str(&_str_header);
 
 	_fd_in = -1;
 	_full_file_name = "";
@@ -51,15 +57,16 @@ Request::Request(int sk, Host* h, Server* s) : _socket(sk), _host(h), _server(s)
 	_tmp_file = "";
 
 	_status_code = 200;
-    _cgi.set_request(this);
 }
 
 Request::~Request()
 {
     delete[] _buffer;
-	if (_socket > 0)
-		close(_socket);
-	if (_tmp_file != "" && std::remove(_tmp_file.c_str()))
+    if (_cgi)
+        delete (_cgi);
+    if (_socket > 0)
+        close(_socket);
+    if (_tmp_file != "" && std::remove(_tmp_file.c_str()))
         std::cerr << "Error: Can not delete file " << _tmp_file << std::endl;
 }
 
@@ -67,7 +74,7 @@ int     Request::read(void)
 {
     if (!_read_queue)
         return (0);
-    if (_header == "")
+    if (_str_header == "")
         read_header();
     else
         read_body();
@@ -103,11 +110,11 @@ bool	Request::receive_header(void)
         if (ret > 0)
         {
             _buffer[ret] = 0;
-            _header += _buffer;
-            _body_position = _header.find("\r\n\r\n");
+            _str_header += _buffer;
+            _body_position = _str_header.find("\r\n\r\n");
         }
     }
-    std::cout << "Request header: " << _header.size() << std::endl << _header << std::endl;
+    std::cout << "Request header: " << _str_header.size() << std::endl << _str_header << std::endl;
     if (_body_position == NPOS)
     {
         std::cerr << "Error: No end header found.\n" << std::endl;
@@ -121,21 +128,40 @@ bool	Request::receive_header(void)
 
 bool	Request::parse_header(void)
 {
-    if (!Header::parse_method_url(_header, _url, _method))
+    if (!_header.parse_method_url(_url, _method))
     {
         _status_code = 400;	// Bad Request
         return (false);
+    }
+    _host_name = _header.parse_host_name();
+    if (_host_name == "")
+    {
+        _status_code = 400;	// Bad Request
+        return (false);
+    }
+    std::vector<Server*>        servers = _address->get_servers();
+    std::vector<std::string>    server_names;
+    _server = servers[0];
+    for (std::vector<Server*>::iterator sv = servers.begin() + 1;
+            sv != servers.end(); ++sv)
+    {
+        server_names = (*sv)->get_server_names();
+        for (std::vector<std::string>::iterator it = server_names.begin() + 1;
+                it != server_names.end(); ++it)
+            if (_host_name == *it)
+                _server = *sv;
     }
     if (!check_location())
         return (false);
+    if (_method == POST)
+        _cgi = new Cgi(this);
     if (_method == GET)
         return (true);
-    if (!Header::parse_content_type(_host, _header, _content_type))
-    {
-        _status_code = 400;	// Bad Request
-        return (false);
-    }
-    if (!Header::parse_content_length(_header, _content_length))
+    _content_type = _header.parse_content_type();
+    std::cout << "Content-Type: " << _content_type << std::endl;
+    _content_length = _header.parse_content_length();
+    std::cout << "Content-Length: " << _content_length << std::endl;
+    if (_content_type == "" || _content_length == NPOS)
     {
         _status_code = 400;	// Bad Request
         return (false);
@@ -243,7 +269,7 @@ int     Request::end_read(void)
     _host->new_response_sk(_socket);
     _response.set_status_code(_status_code);
     if (_status_code == 200 && _method == POST)
-        _cgi.execute();
+        _cgi->execute();
     _response.set_write_queue(true);
     return (0);
 }
@@ -253,12 +279,12 @@ Server*		Request::get_server(void) const {return (_server);}
 e_method	Request::get_method(void) const {return (_method);}
 std::string	Request::get_url(void) const {return (_url);}
 Response*	Request::get_response(void) {return (&_response);}
-const Cgi*  Request::get_cgi(void) const {return (&_cgi);}
+Cgi*        Request::get_cgi(void) const {return (_cgi);}
 int		    Request::get_status_code(void) const {return (_status_code);}
 std::string	Request::get_content_type(void) const {return (_content_type);}
 size_t		Request::get_content_length(void) const {return (_content_length);}
 size_t		Request::get_body_size(void) const {return (_body_size);}
-std::string	Request::get_header(void) const {return (_header);}
+std::string	Request::get_str_header(void) const {return (_str_header);}
 std::string	Request::get_full_file_name(void) const {return (_full_file_name);}
 Location*	Request::get_location(void) const {return (_location);}
 int		    Request::get_fd_in(void) const {return (_fd_in);}

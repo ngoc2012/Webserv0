@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/27 07:35:49 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/04 21:58:17 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,12 @@ Server&	Server::operator=( Server const & src )
 	_host = src.get_host();
 	return (*this);
 }
+Server::Server(Host* host): _host(host)
+{
+	_ip_address = std::string("127.0.0.1");
+	_port = 4242;
+	_socket = -1;
+}
 Server::~Server()
 {
 	for (std::vector<Location*>::iterator it = _locations.begin();
@@ -43,80 +49,21 @@ Server::~Server()
 	}
 }
 
-int	Server::server_socket(void)
-{
-	_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (_socket < 0)
-	{
-		perror("listen socket: socket() failed");
-		return (-1);
-	}
-	int    on = 1;
-	if (setsockopt(_socket, SOL_SOCKET,  SO_REUSEADDR,
-                   (char *)&on, sizeof(on)) < 0)
-	{
-		perror("reusable socket: setsockopt() failed");
-		return (-1);
-	}
-	fcntl(_socket, F_SETFL, O_NONBLOCK);	// ioctl not allowed
-	return (bind_addr());
-}
-
-int	Server::bind_addr(void)
-{
-	struct sockaddr_in	addr;
-
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(_port);
-	addr.sin_addr.s_addr = inet_addr(_ip_address.c_str());
-	if (bind(_socket, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-	{
-		perror("bind() failed");
-		return (-1);
-	}
-	if (listen(_socket, _host->get_max_clients()) < 0)
-	{
-		perror("listen() failed");
-		return (-1);
-	}
-	std::cout << "Listening at " << _ip_address << ":" << _port
-		<< " (socket : " << _socket << ")" << std::endl;
-	return (_socket);
-}
-
-//Accept all the new connections, create a new socket and add to the master set
-void	Server::accept_client_sk(void)
-{
-	std::cout << "Listening socket is readable " << _socket << std::endl;
-	int	new_sk;
-	do
-	{
-		new_sk = accept(_socket, NULL, NULL);
-		if (new_sk < 0)
-		{
-			if (errno != EWOULDBLOCK)
-				perror("accept() failed");
-			break;
-		}
-		fcntl(new_sk, F_SETFL, O_NONBLOCK);
-		std::cout << "  New incoming connection - " << new_sk << std::endl;
-		_host->new_request_sk(new_sk, this);
-	} while (new_sk != -1);
-}
-
 void			        Server::insert_location(Location* l) {_locations.push_back(l);}
 
-const char*		        Server::get_ip_address(void) const {return (_ip_address.c_str());}
-short unsigned int	    Server::get_port(void) const {return (_port);}
-int			            Server::get_socket(void) const {return (_socket);}
-Host*			        Server::get_host(void) const {return (_host);}
-std::string		        Server::get_root(void) const {return (_root);}
-std::string		        Server::get_server_name(void) const {return (_server_name);}
-std::vector<Location*>	Server::get_locations(void) const {return (_locations);}
+std::string		            Server::get_address(void) const {return (_address);}
+const char*		            Server::get_ip_address(void) const {return (_ip_address.c_str());}
+short unsigned int	        Server::get_port(void) const {return (_port);}
+int			                Server::get_socket(void) const {return (_socket);}
+Host*			            Server::get_host(void) const {return (_host);}
+std::string		            Server::get_root(void) const {return (_root);}
+std::vector<std::string>    Server::get_server_names(void) const {return (_server_names);}
+std::vector<Location*>	    Server::get_locations(void) const {return (_locations);}
 
 void			Server::set_socket(int i) {_socket = i;}
+void			Server::set_address(std::string a) {_address = a;}
 void			Server::set_ip_address(std::string ip) {_ip_address = ip;}
 void			Server::set_port(short unsigned int p) {_port = p;}
 void			Server::set_root(std::string r) {_root = r;}
 void			Server::set_host(Host* h) {_host = h;}
-void			Server::set_server_name(std::string s) {_server_name = s;}
+void			Server::set_server_name(std::string s) {_server_names.push_back(s);}

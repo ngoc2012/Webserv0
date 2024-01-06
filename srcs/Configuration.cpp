@@ -6,12 +6,13 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2024/01/02 11:03:25 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/06 09:15:51 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Configuration.hpp"
 #include "Host.hpp"
+#include "Address.hpp"
 #include "Server.hpp"
 #include "Location.hpp"
 
@@ -23,6 +24,129 @@ Configuration&	Configuration::operator=( Configuration const & src )
 	return (*this);
 }
 Configuration::~Configuration() {}
+
+bool    Configuration::add_server(Host* host, Server* new_server, std::map<std::string, Address*>& address)
+{
+    if (new_server->get_address() == "")
+    {
+        std::cerr << "Error: Server without address." << std::endl;
+        delete (new_server);
+        return (false);
+    }
+    if (new_server->get_root() == "")
+    {
+        std::cerr << "Error: Server without root." << std::endl;
+        delete (new_server);
+        return (false);
+    }
+    if (!new_server->get_locations().size())
+    {
+        std::cerr << "Error: Server without location." << std::endl;
+        delete (new_server);
+        return (false);
+    }
+    if (!address[new_server->get_address()])
+    {
+        Address* new_address = new Address(host,
+                new_server->get_ip_address(), new_server->get_port());
+        if (!new_address)
+        {
+            delete (new_server);
+            return (false);
+        }
+        address[new_server->get_address()] = new_address;
+        new_address->push(new_server);
+    }
+    else
+        address[new_server->get_address()]->push(new_server);
+    return (true);
+}
+
+bool    Configuration::parser(Host* host, const char* conf)
+{
+    //std::vector<Server*>                servers;
+    std::map<std::string, Address*>		address;
+
+	enum e_part {LOCATION, HOST, SERVER, P_NONE};
+	e_part	        part = P_NONE;
+	Server*		    new_server = 0;
+	Location*	    new_location = 0;
+	std::string	    line;
+	int		        i = 0;
+	bool	        err = false;
+
+	std::ifstream	        conf_file(conf);
+	if (!conf_file.is_open()) {
+		std::cerr << "Error opening the file." << std::endl;
+		return (false);
+	}
+
+	while (std::getline(conf_file, line))
+	{
+		std::string		s = remove_comments(line);
+		//std::cout << "|" << s << "|" << std::endl;
+		std::vector<std::string>	words = ft::split_string(s, std::string(" 	"));
+		i++;
+		if (words.size() == 0)
+			;
+		else if (s[0] == 'h' && words[0] == "host")
+			part = HOST;
+		else if (s[0] == 's' && words[0] == "server")
+		{
+            if (new_server && !add_server(host, new_server, address))
+            {
+                new_server = 0;
+                err = true;
+            }
+            else
+            {
+                part = SERVER;
+                new_server = new Server(host);
+                if (!new_server)
+                    err = true;
+            }
+		}
+		else if (s[0] == '	' && words[0] == "location")
+		{
+			if (part != SERVER && part != LOCATION)
+				err = true;
+			else
+			{
+				part = LOCATION;
+				new_location = new Location(words[1]);
+				new_server->insert_location(new_location);
+			}
+		}
+		else
+			switch (part)
+			{
+				case P_NONE:
+					err = true;
+					break ;
+				case LOCATION:
+					err = location_parser(s, new_location, words);
+					break;
+				case SERVER:
+					err = server_parser(s, new_server, words);
+					break;
+				case HOST:
+					err = host_parser(s, host, words);
+					break;
+			}
+        if (err)
+        {
+            conf_file_error(s, i);
+            break ;
+        }
+	}
+    if (new_server && !add_server(host, new_server, address))
+        err = true;
+    host->set_parser_error(err);
+    host->set_str_address(address);
+    conf_file.close();
+    return (!err);
+}
+
 std::string	Configuration::remove_comments(std::string& s)
 {
 	size_t	hash_pos = s.find("#");
@@ -30,6 +154,7 @@ std::string	Configuration::remove_comments(std::string& s)
 		return (s);
 	return (s.substr(0, hash_pos));
 }
+
 std::string	Configuration::remove_spaces_end(std::string& s)
 {
 	size_t	n = s.length();
@@ -73,7 +198,9 @@ bool	Configuration::server_parser(std::string cmd, Server* server, std::vector<s
 			return (true);
 	}
 	else if (words[0] == "server_name")
-		server->set_server_name(words[1]);
+		for (std::vector<std::string>::iterator it = words.begin() + 1;
+				it != words.end(); ++it)
+            server->set_server_name(*it);
 	else if (words[0] == "root")
 	{
 		struct stat	info;
@@ -155,76 +282,6 @@ bool	Configuration::location_parser(std::string cmd, Location* loc, std::vector<
 	return (false);
 }
 
-Configuration::Configuration(std::vector<Server*>& servers, Host* host, const char* conf)
-{
-	//const char*	keys_server[] = {"listen", "server_name", "location"};
-	//const char*	keys_location[] = {"methods", "client_max_body_size", "client_body_buffer_size", "fastcgi_pass", "fastcgi_param", "include"};
-	std::ifstream	conf_file(conf);
-	if (!conf_file.is_open()) {
-		std::cerr << "Error opening the file." << std::endl;
-		return ;
-	}
-	enum e_part {LOCATION, HOST, SERVER, P_NONE};
-	e_part	part = P_NONE;
-	Server		*new_server = 0;
-	Location	*new_location = 0;
-	int		i = 0;
-	std::string	line;
-	bool	err = false;
-	while (std::getline(conf_file, line))
-	{
-		std::string		s = remove_comments(line);
-		//s = remove_spaces_end(s);
-		//std::cout << "|" << s << "|" << std::endl;
-		std::vector<std::string>	words = ft::split_string(s, std::string(" 	"));
-		i++;
-		if (words.size() == 0)
-			;
-		else if (s[0] == 'h' && words[0] == "host")
-			part = HOST;
-		else if (s[0] == 's' && words[0] == "server")
-		{
-			part = SERVER;
-			new_server = new Server();
-			servers.push_back(new_server);
-		}
-		else if (s[0] == '	' && words[0] == "location")
-		{
-			if (part != SERVER && part != LOCATION)
-				err = true;
-			else
-			{
-				part = LOCATION;
-				new_location = new Location(words[1]);
-				new_server->insert_location(new_location);
-			}
-		}
-		else
-			switch (part)
-			{
-				case P_NONE:
-					err = true;
-					break ;
-				case LOCATION:
-					err = location_parser(s, new_location, words);
-					break;
-				case SERVER:
-					err = server_parser(s, new_server, words);
-					break;
-				case HOST:
-					err = host_parser(s, host, words);
-					break;
-			}
-		if (err)
-		{
-			conf_file_error(s, i);
-			break ;
-		}
-	}
-	host->set_parser_error(err);
-	conf_file.close();
-}
-
 bool	Configuration::listen(Server* s, std::vector<std::string> words)
 {
 	if (words.size() != 2)
@@ -245,6 +302,7 @@ bool	Configuration::listen(Server* s, std::vector<std::string> words)
 	n = std::atoi(address[1].c_str());
 	if (!ft::is_digit(address[1]) || n < 0 || n > 65535)
 		return (false);
+	s->set_address(words[1]);
 	s->set_ip_address(address[0]);
 	s->set_port(std::atoi(address[1].c_str()));
 	//std::cout << s->get_ip_address() << ":" << s->get_port() << std::endl;

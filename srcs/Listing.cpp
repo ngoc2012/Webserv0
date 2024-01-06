@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2024/01/02 16:44:08 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/06 12:11:25 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,14 +35,20 @@ Listing::~Listing() {
 }
 
 std::string Listing::get_listing(const std::string& directory_name) {
-    std::string listing_html = "<!DOCTYPE html>\n<html>\n    <head>\n        <title>Listing</title>\n    </head>\n    <body>\n";
+    std::string     listing_html = "<!DOCTYPE html>\n\
+        <html>\n\
+        <head>\n\
+        <title>Listing</title>\n\
+        </head>\n\
+        <body>\n";
     const char* directory_path = directory_name.c_str();
     DIR* directory = opendir(directory_path);
-    if (directory != nullptr) {
+    if (directory) {
         listing_html += "        <h2>Contenu du repertoire : " + directory_name + "</h2>\n";
         listing_html += "        <ul>\n";
         struct dirent* entry;
-        while ((entry = readdir(directory)) != nullptr) {
+        while ((entry = readdir(directory))) {
+            std::cout << entry->d_name << " - " << (entry->d_type == DT_REG) << " - " << (entry->d_type == DT_DIR) << std::endl;
             if (entry->d_type == DT_REG) {
                 // Fichier régulier
                 listing_html += "<li>";
@@ -52,7 +58,11 @@ std::string Listing::get_listing(const std::string& directory_name) {
                 listing_html += entry->d_name;
                 listing_html += "</a>";
                 listing_html += "</li>\n";
-            } else if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+            } else if (entry->d_type == DT_DIR
+                    && std::string(entry->d_name) != "."
+                    && std::string(entry->d_name) != "..") {
+                //    && strcmp(entry->d_name, ".") != 0
+                //    && strcmp(entry->d_name, "..") != 0) {
                 // Dossier (à l'exception des dossiers '.' et '..')
                 listing_html += "<li>";
                 listing_html += "        <a href='/index_files/";

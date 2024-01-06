@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2023/12/16 11:54:19 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/04 21:59:44 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,37 +35,36 @@ class	Location;
 class	Server
 {
 	private:
-		Host*			        _host;
-		std::string		        _ip_address;
-		short unsigned int	    _port;
-		int			            _socket;
-		std::string		        _server_name;
-		std::string	        	_root;
-		std::vector<Location*>	_locations;	
-
-		int			            bind_addr(void);
+		Host*			            _host;
+		std::string		            _ip_address;
+		short unsigned int	        _port;
+		std::string		            _address;
+		int			                _socket;
+        std::vector<std::string>	_server_names;
+		std::string	        	    _root;
+		std::vector<Location*>	    _locations;	
 
 		Server(const Server&);
 		Server			&operator=(const Server& op);
-
-	public:
 		Server();
+	public:
+		Server(Host*);
 		virtual ~Server();
 
-		void			accept_client_sk(void);
-		int			server_socket(void);
-		void			insert_location(Location* l);
+		void			        insert_location(Location* l);
 
-		const char*		get_ip_address(void) const;
-		short unsigned int	get_port(void) const;
-		int			get_socket(void) const;
-		Host*			get_host(void) const;
-		std::string		get_root(void) const;
-		std::string		get_server_name(void) const;
-		std::vector<Location*>	get_locations(void) const;	
+		const char*		            get_ip_address(void) const;
+		short unsigned int	        get_port(void) const;
+		int			                get_socket(void) const;
+		Host*			            get_host(void) const;
+		std::string		            get_root(void) const;
+        std::vector<std::string>    get_server_names(void) const;
+		std::vector<Location*>	    get_locations(void) const;	
+		std::string		            get_address(void) const;
 
 		void			set_socket(int);
 		void			set_ip_address(std::string);
+		void			set_address(std::string);
 		void			set_port(short unsigned int);
 		void			set_host(Host*);
 		void			set_root(std::string);
