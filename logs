@@ -36,24 +36,49 @@ Listening socket is readable 3
   New incoming connection - 6
 RequestHeader Default constructor
 Waiting on select() ...
-Request header: 646
-GET /index_files HTTP/1.1
+Request header: 1024
+PUT /put_test/test.txt HTTP/1.1
 Host: 127.0.0.1:4141
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
-Cookie: wc_visitor=98503-5f99d83b-247b-bc74-f175-423093d72941; wc_client=direct+..+none+..++..++..++..++..+http%3A%2F%2F127.0.0.1%3A4141%2F+..+98503-5f99d83b-247b-bc74-f175-423093d72941+..+
-Upgrade-Insecure-Requests: 1
-Sec-Fetch-Dest: document
-Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: none
-Sec-Fetch-User: ?1
+User-Agent: curl/7.81.0
+Accept: */*
+Transfer-Encoding: chunked
+Content-Type: application/x-www-form-urlencoded
 
+14c7
+#Setup the configuration file as follow:
+#- / must answer to GET request ONLY
+#- /put_test/* must answer to PUT request and save files to a directory of your choice
+#- any file with .bla as extension must answer to POST request by calling the cgi_test executable
+#- /post_body must answer anything to POST request with a maxBody of 100
+#- /directory/ must answer to GET request and the root of it would be the repository YoupiBanane and if no file are requested, it should search for youpi.bad_extension files
 
-check_location 6 www/index_files
-end_read 6 www/index_files
+host 	 	
+	#worker_connections 1024;
+	#include /etc/nginx/mime.types	
+	#default_type application/octet-stream
+	# Specifies the maximum accepted body size of a client request, as
+	# indicated by the request header Content-Length. If the stated content
+	# length is greater than this size, then the client receives the HTTP
+	# error code 
+check_location 6 www/put//test.txt
+chunked: 1
+_chunked_size = 5319
+Waiting on select() ...
+read_body: 1024
+_body_size: 1870
+Waiting on select() ...
+read_body: 1024
+_body_size: 2894
+Waiting on select() ...
+read_body: 1024
+_body_size: 3918
+Waiting on select() ...
+read_body: 1024
+_body_size: 4942
+Waiting on select() ...
+read_body: 384
+_body_size: 5326
+end_read 6 www/put//test.txt
 Waiting on select() ...
 Write set sk = 6
 Header Constructor
@@ -61,99 +86,15 @@ Response Header:
 HTTP/1.1 200 OK
 Allow: PUT,GET,DELETE
 Content-Language: en
-Content-Type: text/html
-Content-Length: 6326
-Date: Sat, 06 Jan 2024 16:18:21 GMT
+Content-Type: text/plain
+Content-Length: 0
+Date: Mon, 08 Jan 2024 09:26:15 GMT
 
 
 Header Destruction
 Waiting on select() ...
 Write set sk = 6
-end_connection read |www/index_files| 6 0/6326
-close_client_sk 6
-RequestHeader Destruction
-Waiting on select() ...
-Listening socket is readable 3
-  New incoming connection - 6
-RequestHeader Default constructor
-Waiting on select() ...
-Request header: 739
-GET /index_files/2e901695-d600-4ad7-a59c-01e92b66e5d8_data HTTP/1.1
-Host: 127.0.0.1:4141
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
-Referer: http://127.0.0.1:4141/index_files
-Cookie: wc_visitor=98503-5f99d83b-247b-bc74-f175-423093d72941; wc_client=direct+..+none+..++..++..++..++..+http%3A%2F%2F127.0.0.1%3A4141%2F+..+98503-5f99d83b-247b-bc74-f175-423093d72941+..+
-Upgrade-Insecure-Requests: 1
-Sec-Fetch-Dest: document
-Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: same-origin
-Sec-Fetch-User: ?1
-
-
-check_location 6 www/index_files/2e901695-d600-4ad7-a59c-01e92b66e5d8_data
-end_read 6 www/index_files/2e901695-d600-4ad7-a59c-01e92b66e5d8_data
-Waiting on select() ...
-Write set sk = 6
-Header Constructor
-Response Header:
-HTTP/1.1 200 OK
-Allow: PUT,GET,DELETE
-Content-Language: en
-Content-Type: text/html
-Content-Length: 1067
-Date: Sat, 06 Jan 2024 16:18:23 GMT
-
-
-Header Destruction
-Waiting on select() ...
-Write set sk = 6
-end_connection read |www/index_files/2e901695-d600-4ad7-a59c-01e92b66e5d8_data| 6 0/1067
-close_client_sk 6
-RequestHeader Destruction
-Waiting on select() ...
-Listening socket is readable 3
-  New incoming connection - 6
-RequestHeader Default constructor
-Waiting on select() ...
-Request header: 708
-GET /index_files/embed_data HTTP/1.1
-Host: 127.0.0.1:4141
-User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
-Accept-Language: en-US,en;q=0.5
-Accept-Encoding: gzip, deflate, br
-Connection: keep-alive
-Referer: http://127.0.0.1:4141/index_files
-Cookie: wc_visitor=98503-5f99d83b-247b-bc74-f175-423093d72941; wc_client=direct+..+none+..++..++..++..++..+http%3A%2F%2F127.0.0.1%3A4141%2F+..+98503-5f99d83b-247b-bc74-f175-423093d72941+..+
-Upgrade-Insecure-Requests: 1
-Sec-Fetch-Dest: document
-Sec-Fetch-Mode: navigate
-Sec-Fetch-Site: same-origin
-Sec-Fetch-User: ?1
-
-
-check_location 6 www/index_files/embed_data
-end_read 6 www/index_files/embed_data
-Waiting on select() ...
-Write set sk = 6
-Header Constructor
-Response Header:
-HTTP/1.1 200 OK
-Allow: PUT,GET,DELETE
-Content-Language: en
-Content-Type: text/html
-Content-Length: 628
-Date: Sat, 06 Jan 2024 16:18:34 GMT
-
-
-Header Destruction
-Waiting on select() ...
-Write set sk = 6
-end_connection read |www/index_files/embed_data| 6 0/628
+end_connection read |www/put//test.txt| 6 0/0
 close_client_sk 6
 RequestHeader Destruction
 Waiting on select() ...

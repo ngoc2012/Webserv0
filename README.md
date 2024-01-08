@@ -23,6 +23,15 @@ http://127.0.0.1:4141/index_files
 ### Send a file:
 ```console
 curl -i -X PUT -H "Content-Type: image/jpeg" --data-binary "@test/port6.jpg" 127.0.0.1:4141/put_test/port6.jpg
+
+curl -X PUT -H "Transfer-Encoding: chunked" --data-binary "@.conf" 127.0.0.1:4141/put_test/test.txt
+
+curl -T .conf --header "Transfer-Encoding: chunked" 127.0.0.1:4141/put_test/test.txt
+
+curl -T your_file.iso --header "Transfer-Encoding: chunked" 127.0.0.1:4141/put_test/test.iso
+
+curl -X PUT -H "Content-Type: application/octet-stream" -H "Transfer-Encoding: chunked" --data-raw $'1a\nThis is the first chunk\n1c\nand this is the second one\n0' 127.0.0.1:4141/put_test/test.txt
+
 ```
 
 ### GET:

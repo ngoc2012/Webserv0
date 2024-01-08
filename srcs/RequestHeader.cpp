@@ -6,7 +6,7 @@
 /*   By: ngoc <marvin@42.fr>                        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:57:07 by ngoc              #+#    #+#             */
-/*   Updated: 2024/01/05 23:12:31 by ngoc             ###   ########.fr       */
+/*   Updated: 2024/01/08 08:48:00 by ngoc             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,6 +128,20 @@ size_t	RequestHeader::parse_content_length()
         return (NPOS);
     }
     return (std::atoi(num.c_str()));
+}
+
+bool    RequestHeader::parse_transfer_encoding()
+{
+    size_t  last_pos = _str->find("Transfer-Encoding:", _pos);
+    if (last_pos == NPOS)
+    {
+        //std::cerr << "Error: Transfer-Encoding not found." << std::endl;
+        return (false);
+    }
+    last_pos += 19;
+    if (_str->substr(last_pos, 7) == "chunked")
+        return (true);
+    return (false);
 }
 
 void	RequestHeader::set_host(Host* h) {_host = h;}
