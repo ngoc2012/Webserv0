@@ -6,7 +6,7 @@
 #    By: minh-ngu <marvin@42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/28 10:56:09 by minh-ngu          #+#    #+#              #
-#    Updated: 2024/01/06 17:19:47 by ngoc             ###   ########.fr        #
+#    Updated: 2024/01/08 13:47:01 by ngoc             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,9 +23,9 @@ all:	$(MANDA)
 $(MANDA): $(SRCS) $(OBJS) $(INCS)
 	$(CC) $(FLAGS) $(OBJS) -o $(MANDA)
 test:
-	clear && make re && make clean && ./server
+	clear && make re && make clean && ./server | tee logs
 test0:
-	clear && make re && make clean && valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all ./server
+	clear && make re && make clean && valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all ./server | tee logs
 gits:
 	git add Makefile
 	git add *.cpp
